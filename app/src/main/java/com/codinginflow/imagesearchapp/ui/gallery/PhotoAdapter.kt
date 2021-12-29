@@ -6,9 +6,11 @@ import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.codinginflow.imagesearchapp.R
 import com.codinginflow.imagesearchapp.databinding.ItemPhotoBinding
+import com.codinginflow.imagesearchapp.model.Photo
 
 class PhotoAdapter(private val listener: OnItemClickListener) :
     PagingDataAdapter<String, PhotoAdapter.PhotoViewHolder>(PHOTO_COMPARATOR) {
@@ -47,7 +49,7 @@ class PhotoAdapter(private val listener: OnItemClickListener) :
             binding.apply {
                 Glide.with(itemView)
                     .load(photo)
-                    //.centerCrop()
+                    .diskCacheStrategy(DiskCacheStrategy.DATA)
                     .transition(DrawableTransitionOptions.withCrossFade())
                     .error(R.drawable.ic_error)
                     .into(imageView)

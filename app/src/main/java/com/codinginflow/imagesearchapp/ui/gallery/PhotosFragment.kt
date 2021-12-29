@@ -19,12 +19,13 @@ class PhotosFragment : Fragment(R.layout.fragment_photos), PhotoAdapter.OnItemCl
     private var _binding: FragmentPhotosBinding? = null
     private val binding get() = _binding!!
     private var isImageShown = false
+    private val adapter = PhotoAdapter(this)
 
     @SuppressLint("NotifyDataSetChanged")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentPhotosBinding.bind(view)
-        val adapter = PhotoAdapter(this)
+
         binding.apply {
             recyclerView.setHasFixedSize(true)
             recyclerView.adapter = adapter.withLoadStateHeaderAndFooter(
@@ -32,15 +33,17 @@ class PhotosFragment : Fragment(R.layout.fragment_photos), PhotoAdapter.OnItemCl
                 footer = PhotoLoadStateAdapter { adapter.retry() },
             )
         }
-        viewModel.photos.observe(viewLifecycleOwner) {
-            adapter.submitData(viewLifecycleOwner.lifecycle, it)
-        }
+
+        viewModel.context = requireContext()
+
+        initObservePhotos()
 
         binding.swipeRefreshLayout?.setOnRefreshListener {
+            viewModel.reloadPhotos()
+            initObservePhotos()
             binding.recyclerView.adapter?.notifyDataSetChanged()
             binding.swipeRefreshLayout!!.isRefreshing = false
         }
-
     }
 
     override fun onDestroyView() {
@@ -53,7 +56,6 @@ class PhotosFragment : Fragment(R.layout.fragment_photos), PhotoAdapter.OnItemCl
             if(!isImageShown) {
                 Glide.with(binding.recyclerView)
                     .load(photo)
-                    //.centerCrop()
                     .transition(DrawableTransitionOptions.withCrossFade())
                     .error(R.drawable.ic_error)
                     .into(it)
@@ -65,4 +67,12 @@ class PhotosFragment : Fragment(R.layout.fragment_photos), PhotoAdapter.OnItemCl
             }
         }
     }
+
+    private fun initObservePhotos() {
+        viewModel.photos.observe(viewLifecycleOwner) {
+            adapter.submitData(viewLifecycleOwner.lifecycle, it)
+        }
+    }
+
+
 }
